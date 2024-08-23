@@ -1,4 +1,4 @@
-const { errors, logs, callApi, getCurrentProfile, delay, setCurrentProfile } = require('../core');
+const { errors, logs, callApi, getCurrentProfile, delay, setCurrentProfile } = require('../../base');
 const colors = require('colors');
 const readline = require('readline');
 

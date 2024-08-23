@@ -5,7 +5,7 @@ const {
   loadConfig,
   setCurrentProfile,
   setCurrentProject,
-} = require('./modules/core');
+} = require('./base');
 const colors = require('colors');
 const { processAccount: processGoats } = require('./modules/goats');
 const { processAccount: processCat } = require('./modules/cats');

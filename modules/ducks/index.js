@@ -5,7 +5,7 @@ const {
   getCurrentProfile,
   delay,
   setCurrentProfile,
-} = require('../core');
+} = require('../../base');
 const colors = require('colors');
 const readline = require('readline');
 
