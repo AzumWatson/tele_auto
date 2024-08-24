@@ -1,203 +1,410 @@
-const { delay } = require('../base');
+const {
+  delay,
+  callApi,
+  setCurrentProfile,
+  getCurrentProfile,
+  setCurrentProject,
+  errors,
+  toVietNamTime,
+  logs,
+  FORMAT_DATE_TIME,
+  formatNumber,
+} = require('../base');
 const fs = require('fs');
 const path = require('path');
 const colors = require('colors');
 const readline = require('readline');
+const dayjs = require('dayjs');
+const rPath = (p) => path.join(__dirname, p);
 
-const REPEAT_QUACK = 20;
+const TOTAL_REPEAT_BOOTS_AGAIN = 3;
+let numberRepeatBoots = 0;
 
-const MES_QUACK_LOSE = ['Gà vl','Sắp hết mẹ điểm rồi','Bấm thế bố chịu','Thôi em xin anh','Bấm như lozz']
-const MES_QUACK_WIN = ['Bú','Mút','Hết nước chấm','Được đấy','Thế mới xứng đáng làm con trai của ta','Trời độ','Vãi loz bấm thế này ai chơi']
-
-
-const headers = {
-  authority: '',
-  'Content-Type': 'application/json',
-  Origin: '',
-  Priority: 'u=1, i',
-  'Sec-Ch-Ua-Mobile': '?0',
-  'Sec-Ch-Ua-Platform': 'Windows',
-  'Sec-Fetch-Dest': ' empty',
-  'Sec-Fetch-Mode': 'cors',
-  'Sec-Fetch-Site': 'same-site',
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
-};
-
-const mapAuth = new Map();
-
-function getHeader(username, customHeader) {
-  if (!username) return { ...headers, ...customHeader };
-  const { query_id } = getDataMapAuth(username);
-  return { ...headers, Authorization: 'tma ' + query_id, ...customHeader };
-}
-
-async function setDataMapAuth(username, data) {
-  mapAuth.set(username, data);
-}
-
-function getDataMapAuth(username) {
-  return mapAuth.get(username);
-}
-
-function errors(username, message) {
-  console.log(colors.red(`[ Error ]`), colors.red(message));
-}
-
-function logs(username, message) {
-  console.log(colors.magenta(`[ ${username} ]`), message);
-}
-
-async function callApi({ url, method, headers, body }) {
-  const res = await fetch(url, {
-    method: method,
-    headers: headers,
-    body: JSON.stringify(body),
-  });
-  const response = await res.json();
-  if (!response || response?.message !== 'SUCCESS') {
-    errors('', 'Lỗi call api -' + response?.message);
-    return;
-  }
-  return response;
-}
-
-async function processAccount(username) {
-  const data = getDataMapAuth(username);
-  if (!data) {
-    errors('', 'Lỗi lấy data từ authMap ');
+async function processAccount() {
+  const profile = await getCurrentProfile();
+  if (!profile) {
+    errors('', 'Lấy thông tin acount lỗi !');
     return;
   }
   console.log();
   console.log(
     '-------- Account : ',
-    colors.green(extUserName),
+    colors.green(profile?.username),
     ' running --------',
   );
   try {
-    await getInfo(username);
+    const isAuth = await login();
+    if (!isAuth) return;
+    await getInfo();
   } catch (e) {
-    errors(extUserName, e);
+    errors(profile?.username, e);
   }
 }
 
-async function startExecuteQuack(username) {
-  let startLoop = 0;
-  logs(username, colors.white(`Auto quack ${REPEAT_QUACK} lượt !`));
-  do {
-    const isSuccess = await executeQuack(username, startLoop);
-    if (isSuccess) {
-      ++startLoop;
-    }
-    await delay(2, true);
-  } while (startLoop <= REPEAT_QUACK);
-  logs(username, colors.magenta(`Đủ ${50} lượt quack !`));
-}
-
-async function executeQuack(username, startLoop) {
-  const response = await callApi({
-    url: 'https://tgapi.duckchain.io/quack/execute?',
-    method: 'GET',
-    headers: getHeader(username, {
-      path: '/quack/execute?',
-    }),
-  });
-
-  const { decibel, quackRecords, result } = response?.data;
-  const lastItem = quackRecords?.at(-1);
-  const randomWin = MES_QUACK_WIN[Math.floor(Math.random() * MES_QUACK_WIN.length)];
-  const randomLose = MES_QUACK_LOSE[Math.floor(Math.random() * MES_QUACK_LOSE.length)];
-
-  logs(
-    username,
-    colors.cyan(
-      `Quack ${startLoop} success: ${decibel} quack, ${
-        lastItem === 0
-          ? 'Chả nhận đc tí quack chó nào'
-          : lastItem > 0
-          ? colors.green(`${randomWin} được hẳn ${lastItem} quack 🦆🦆🦆`)
-          : colors.red(`${randomLose}, bị trừ ${lastItem} quack`)
-      }`,
-    ),
-  );
-  return result;
-}
-
-const getInfo = async (username) => {
-  const response = await callApi({
-    url: 'https://tgapi.duckchain.io/user/info',
-    method: 'GET',
-    headers: getHeader(username, {
-      path: '/user/info',
-    }),
-  });
-
-  const { decibels, boxAmount, quackTimes, quackRecords, cardId } =
-    response?.data;
-
-  const totalExecuteQuack = quackRecords.reduce((a, b) => a + +b, 0);
-  logs(
-    username,
-    colors.green(`Đang có ${colors.yellow(decibels)} quack 🦆🦆🦆`),
-  );
-  logs(
-    username,
-    colors.green(`Đang có ${colors.yellow(boxAmount)} hộp từ bạn bè ~~ !`),
-  );
-  logs(username, colors.green(`CardId: ${colors.yellow(cardId)} `));
-  logs(username, colors.green(`Đã quack ${colors.yellow(quackTimes)} lần !`));
-  logs(
-    username,
-    colors.green(
-      `Nhưng quack hơi gà, từ đầu đến giờ ${
-        totalExecuteQuack > 0
-          ? `quack thêm được ${colors.yellow(totalExecuteQuack)}`
-          : `duma âm bằng này rồi ${colors.red(totalExecuteQuack)}`
-      }`,
-    ),
-  );
-  return response;
-};
-
-function extractUserData(queryId) {
-  const decodedString = decodeURIComponent(queryId);
-  const params = new URLSearchParams(decodedString);
-  const user = JSON.parse(params.get('user'));
-  return {
-    extUserId: user.id,
-    extUserName: user.username,
-    queryDecode: decodedString,
-    user: user,
-    query_id: queryId,
-  };
-}
-
-async function loadProfile() {
+async function login() {
   try {
-    const dataFile = path.join(__dirname, 'data.txt');
-    const v = fs
-      .readFileSync(dataFile, 'utf8')
-      .replace(/\r/g, '')
-      .split('\n')
-      .filter(Boolean);
-
-    if (v.length) {
-      for await (let a of v) {
-        const data = extractUserData(a);
-        const { extUserName } = data;
-        if (!extUserName) {
-          errors('', 'Lỗi đọc query_id ! Lấy lại query_id ');
-          return;
-        }
-        await setDataMapAuth(extUserName, data);
-      }
-      console.log(` Load thành công profile `.green);
-      return v;
+    const user = await getCurrentProfile();
+    const response = await callApi({
+      url: 'https://boink.astronomica.io/public/users/loginByTelegram?p=web',
+      method: 'POST',
+      tokenType: '',
+      isAuth: false,
+      body: {
+        initDataString: user?.query_id,
+      },
+    });
+    if (!response || !response?.token) {
+      errors('Lấy lại token !');
+      return;
     }
-    console.log(colors.red('Không tìm thấy thông tin nào trong data.txt'));
-    return [];
-  } catch (e) {
-    console.log(colors.red('Không thể load profile: ', e));
+    const { token } = response;
+    await setCurrentProfile({
+      ...user,
+      token: token,
+    });
+    logs(`Login thành công !`);
+    return true;
+  } catch (error) {}
+}
+
+async function activeBoots() {
+  try {
+    const response = await callApi({
+      url: 'https://boink.astronomica.io/api/boinkers/addShitBooster?p=weba',
+      method: 'POST',
+      tokenType: '',
+      body: {
+        purchaseMethod: 'free',
+        // 'energy' là boots bằng năng lượng spin
+      },
+    });
+
+    if (!response) {
+      errors('Lấy lại token !');
+      return;
+    }
+
+    if (response?.message === 'Free booster is not available') {
+      logs(colors.yellow(`Boots đang active hoặc chưa sẵn sàng !`));
+      return;
+    }
+
+    logs(`Active boots free thành công !}`);
+    return;
+  } catch (error) {
+    errors(
+      `Active boots faild, đang active lại lần ${colors.yellow(
+        numberRepeatBoots,
+      )}`,
+    );
+  }
+}
+
+async function autoSpin(levelBetSpin = 1) {
+  try {
+    const response = await callApi({
+      url: `https://boink.astronomica.io/api/play/spinSlotMachine/${levelBetSpin}?p=weba`,
+      method: 'POST',
+      tokenType: '',
+    });
+
+    if (!response) {
+      errors('Lấy lại token !');
+      return;
+    }
+
+    if (response?.code) {
+      logs('Hết năng lượng !');
+      return;
+    }
+
+    const {
+      energyUsed,
+      newCryptoCurrencyAmount,
+      newSoftCurrencyAmount,
+      prize: { prizeTypeName, prizeValue },
+      slutz,
+    } = response;
+
+    logs(
+      `Spin ${colors.yellow(energyUsed)} energy: Result [ ${colors.magenta(
+        slutz.join(', '),
+      )} ], Reward: ${colors.yellow(prizeTypeName)} ${colors.yellow(
+        prizeValue,
+      )} `,
+    );
+    switch (prizeTypeName) {
+      case 'Gold':
+        logs(`Balance Gold: ${colors.yellow(newSoftCurrencyAmount)}`);
+        break;
+      case '':
+        logs(`Balance Cứt: ${colors.yellow(newCryptoCurrencyAmount)}`);
+        break;
+      default:
+        break;
+    }
+    return {
+      spin: prizeTypeName === 'Spins' ? Number(prizeValue) : 0,
+      balance: newSoftCurrencyAmount
+    };
+  } catch (error) {
+    errors('Auto spin error: ' + error);
+  }
+}
+
+async function upgradeLevelBoinker() {
+  try {
+    const response = await callApi({
+      url: 'https://boink.astronomica.io/api/boinkers/upgradeBoinker?p=weba',
+      method: 'POST',
+      tokenType: '',
+    });
+
+    if (!response) {
+      errors('Lấy lại token !');
+      return;
+    }
+    const {
+      userBoinkers: {
+        currentBoinkerProgression: { level },
+      },
+      newSoftCurrencyAmount
+    } = response;
+    return { level, balance: newSoftCurrencyAmount  };
+  } catch (error) {
+    errors('Upgrade level faild !');
+  }
+}
+
+async function getInfoUpgrade() {
+  try {
+    const response = await callApi({
+      url: `https://boink.astronomica.io/public/data/configV2.js?p=weba`,
+      method: 'GET',
+      tokenType: '',
+      isAuth: false,
+    });
+
+    if (!response) {
+      errors('Lấy lại token !');
+      return;
+    }
+
+    const {
+      boinkersData: boinkersDataSetting,
+      shitBoostersSettings,
+      slotMachineSettings,
+    } = response;
+    return { boinkersDataSetting, shitBoostersSettings, slotMachineSettings };
+  } catch (error) {}
+}
+
+async function getListTask() {
+  try {
+    const response = await callApi({
+      url: 'https://boink.astronomica.io/api/rewardedActions/getRewardedActionList?p=weba',
+      method: 'GET',
+      tokenType: '',
+    });
+
+    if (!response) {
+      errors('Lấy lại token !');
+      return;
+    }
+    const listQuest = [...response];
+    logs(`Total quest: ${listQuest.length}`);
+  } catch (error) {
+    errors('Upgrade level faild !');
+  }
+}
+
+async function clickTask(id) {
+  const url = `https://boink.astronomica.io/api/rewardedActions/rewardedActionClicked/${id}?p=weba`;
+  try {
+    const response = await callApi({
+      url: url,
+      method: 'POST',
+      tokenType: '',
+    });
+
+    if (!response) {
+      errors('Lấy lại token !');
+      return;
+    }
+    const listQuest = [...response];
+    logs(`Total quest: ${listQuest.length}`);
+  } catch (error) {
+    errors('Upgrade level faild !');
+  }
+}
+
+async function claimTask(id) {
+  const url = `https://boink.astronomica.io/api/rewardedActions/claimRewardedAction/${id}?p=weba`;
+  try {
+    const response = await callApi({
+      url: url,
+      method: 'POST',
+      tokenType: '',
+    });
+
+    if (!response) {
+      errors('Lấy lại token !');
+      return;
+    }
+    return true;
+  } catch (error) {
+    errors('Upgrade level faild !');
+  }
+}
+
+async function getInfo() {
+  try {
+    const response = await callApi({
+      url: 'https://boink.astronomica.io/api/users/me?p=weba',
+      method: 'GET',
+      tokenType: '',
+    });
+
+    if (!response) {
+      errors('Lấy lại token !');
+      return;
+    }
+
+    const {
+      boinkers: {
+        booster,
+        completedBoinkers,
+        currentBoinkerProgression: { level, id },
+      },
+      currencySoft,
+      currencyCrypto,
+      friends,
+      offlineEarningsCollected,
+      rank,
+      gamesEnergy: {
+        slotMachine: { energy },
+      },
+      userName,
+    } = response;
+
+    await activeBoots();
+
+    logs(`Tổng số Boinkers: ${colors.yellow(completedBoinkers)}`);
+    logs(`Boots Free: Hết lúc ${colors.cyan(toVietNamTime(booster?.endsAt))}`);
+    logs(`Balance Gold: ${colors.yellow(formatNumber(currencySoft))}`);
+    logs(`Balance Cứt: ${colors.yellow(currencyCrypto?.toFixed(5) || 0)}`);
+    logs(`Total Ref: ${colors.yellow(friends.length)}`);
+    logs(
+      `Cứt đào offline: ${colors.yellow(
+        offlineEarningsCollected?.toFixed(5) || 0,
+      )}`,
+    );
+    logs(`Rank: ${colors.yellow(rank)}`);
+    logs(`Username: ${colors.yellow(userName)}`);
+    logs(`Năng lượng: ${colors.yellow(energy)}🔋`);
+    
+    let currentBalanceGold = currencySoft
+
+    const { boinkersDataSetting, slotMachineSettings } = await getInfoUpgrade();
+
+    // Auto Spin
+    if (energy) {
+      const betConfig = slotMachineSettings?.BETS_CONDITIONS;
+      let maxBet = 1;
+      const listBetValid = betConfig
+        .filter((e) => e?.energyAmountForTempUnlock < energy)
+        .map((e) => e?.bet);
+      if (listBetValid.length) {
+        maxBet = Math.max(
+          ...betConfig
+            .filter((e) => e?.energyAmountForTempUnlock < energy)
+            .map((e) => e?.bet),
+        );
+      }
+  
+      const numberSpinMaxLevel = Math.round(energy / maxBet);
+      let numberSpinOneLevel = energy - numberSpinMaxLevel * maxBet;
+  
+      logs(
+        `Đang auto spin ${colors.yellow(
+          numberSpinMaxLevel + numberSpinOneLevel,
+        )} lần !`,
+      );
+  
+      if (numberSpinMaxLevel) {
+        let slotMaxLevel = 0;
+        do {
+          ++slotMaxLevel;
+          const res = await autoSpin(maxBet);
+          if(!res){
+            --slotMaxLevel
+          }
+          numberSpinOneLevel += res?.spin
+          currentBalanceGold = res?.balance
+        } while (numberSpinMaxLevel > 0 && slotMaxLevel <= numberSpinMaxLevel);
+      }
+  
+      if (numberSpinOneLevel) {
+        let slotOneLevel = 0;
+        do {
+          ++slotOneLevel;
+          const res = await autoSpin(1);
+          if(!res){
+            --slotMaxLevel
+          }
+          currentBalanceGold = res?.balance
+        } while (numberSpinOneLevel > 0 && slotOneLevel <= numberSpinMaxLevel);
+      }
+  
+    }
+
+
+    // Auto upgrade level Boinker
+    const currentBoinkerSetting = boinkersDataSetting?.find(
+      (e) => e?.id === id,
+    );
+    
+    if (currentBoinkerSetting) {
+      const priceUpgradeSetting = currentBoinkerSetting?.pricesByLevel;
+      const priceToUpgrade = priceUpgradeSetting[level] || 999999999999;
+
+      if (currentBalanceGold < priceToUpgrade) {
+        logs(
+          colors.red(
+            `Không đủ gold để update level, cần ${colors.yellow(
+              formatNumber(priceToUpgrade),
+            )}`,
+          ),
+        );
+        return;
+      }
+
+      let currentPriceUpgrade = priceToUpgrade;
+      do {
+        const res = await upgradeLevelBoinker();
+        if (!res || !res?.level) {
+          currentBalanceGold = 0;
+        }
+        logs(`Đã upgrade Boinker lên level ${res?.level}`)
+        currentPriceUpgrade = priceUpgradeSetting[res?.level] || 999999999999;
+        currentBalanceGold = res?.balance
+      } while (currentBalanceGold > 0 && currentBalanceGold >= currentPriceUpgrade);
+      
+      if(currentBalanceGold < currentPriceUpgrade){
+        logs(
+          colors.red(
+            `Không đủ gold để update level, cần ${colors.yellow(
+              formatNumber(currentPriceUpgrade),
+            )}`,
+          ),
+        );
+      }
+    }
+
+    return true;
+  } catch (error) {
+    errors(error);
+    return;
   }
 }
 
@@ -212,18 +419,31 @@ async function waitWithCountdown(seconds) {
   console.log('');
 }
 
-async function eventLoop() {
-  for await (const username of mapAuth.keys()) {
-    await processAccount(username);
-    await delay(1, true);
+async function loadProfile() {
+  try {
+    const v = JSON.parse(fs.readFileSync(rPath('data.json'), 'utf8') || '[]');
+    if (v.length) {
+      console.log(colors.green(`Load thành công ${v.length} profile`));
+      return v;
+    }
+    console.log(colors.red('Không tìm thấy thông tin nào trong data.json'));
+    return [];
+  } catch (e) {
+    console.log(colors.red('Không thể load profile'));
   }
-    const timeWait = 30 * 60; //30p
-    await waitWithCountdown(timeWait);
-    await eventLoop();
 }
 
 (async function main() {
-  await loadProfile();
-  await delay(1, true);
-  await eventLoop();
+  await setCurrentProject('Boinker 💩');
+  const profiles = await loadProfile();
+  await delay(1);
+  for await (const profile of profiles) {
+    numberRepeatBoots = 0;
+    await setCurrentProfile(profile);
+    await processAccount();
+    await delay(1);
+  }
+  const timeWait = 2 * 60 * 60; //2h
+  await waitWithCountdown(timeWait);
+  await main();
 })();

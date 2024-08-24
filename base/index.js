@@ -1,12 +1,19 @@
 const colors = require('colors');
 const fs = require('fs');
 const path = require('path');
+const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const profile = new Map();
 const currentAccount = new Map();
 const currentProject = new Map();
 const KEY_CURRENT_PROFILE = 'currentProfile';
 const KEY_CURRENT_PROJECT = 'currentProject';
+const FORMAT_DATE_TIME = 'DD/MM/YYYY HH:mm'
 
 const headers = {
   authority: '',
@@ -34,6 +41,12 @@ async function errors(message) {
   );
 }
 
+function toVietNamTime(timeUtc) {
+  const vietnamTime = dayjs.utc(timeUtc).tz('Asia/Ho_Chi_Minh');
+  const formattedVietnamTime = vietnamTime.format(FORMAT_DATE_TIME);
+  return formattedVietnamTime;
+}
+
 async function logs(message) {
   const { username } = await getCurrentProfile(KEY_CURRENT_PROFILE);
   const project = await getCurrentProject(KEY_CURRENT_PROFILE);
@@ -44,6 +57,10 @@ async function logs(message) {
     colors.green(message),
   );
 }
+
+const formatNumber = (point = 0) => {
+  return new Intl.NumberFormat('us-US').format(point);
+};
 
 async function setCurrentProfile(data) {
   currentAccount.set(KEY_CURRENT_PROFILE, data);
@@ -65,7 +82,13 @@ async function getProfile() {
   return profile;
 }
 
-async function getHeader(isQueryId = false, url, method, customHeader) {
+async function getHeader({
+  isQueryId = false,
+  url,
+  method,
+  customHeader,
+  tokenType,
+}) {
   const splitUrl = url.split('/');
   const domain = [...splitUrl].slice(0, 3).join('/');
   const path = '/' + [...splitUrl].slice(3, splitUrl.length).join('/');
@@ -89,7 +112,8 @@ async function getHeader(isQueryId = false, url, method, customHeader) {
   return {
     ...headers,
     ...authDomain,
-    Authorization: 'Bearer ' + token,
+    Authorization:
+      tokenType === 'Bearer' ? 'Bearer ' + token : tokenType + token,
     ...customHeader,
   };
 }
@@ -101,16 +125,17 @@ async function callApi({
   isQueryId = false,
   headersCustom = {},
   isAuth = true,
-  typeQueryId
+  typeQueryId,
+  tokenType = 'Bearer',
 }) {
   try {
-    const genHeaders = await getHeader(
+    const genHeaders = await getHeader({
       isQueryId,
       url,
       method,
-      headersCustom
-    );
-
+      headersCustom,
+      tokenType,
+    });
 
     if (!isAuth) {
       delete genHeaders.Authorization;
@@ -168,7 +193,7 @@ function extractUserData(queryId) {
     hash: hash,
     chat_type: chat_type,
     query_id_decode: query_id_decode,
-    isUseDecode: isUseDecode
+    isUseDecode: isUseDecode,
   };
 }
 
@@ -230,6 +255,9 @@ const publicModules = {
   delay,
   setCurrentProject,
   getCurrentProject,
+  toVietNamTime,
+  FORMAT_DATE_TIME,
+  formatNumber
 };
 
 module.exports = publicModules;
