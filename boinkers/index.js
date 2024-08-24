@@ -338,6 +338,8 @@ async function getInfo() {
           const res = await autoSpin(maxBet);
           if(!res){
             --slotMaxLevel
+            currentBalanceGold = 0
+            return
           }
           numberSpinOneLevel += res?.spin
           currentBalanceGold = res?.balance
@@ -351,6 +353,8 @@ async function getInfo() {
           const res = await autoSpin(1);
           if(!res){
             --slotMaxLevel
+            currentBalanceGold = 0
+            return
           }
           currentBalanceGold = res?.balance
         } while (numberSpinOneLevel > 0 && slotOneLevel <= numberSpinMaxLevel);
