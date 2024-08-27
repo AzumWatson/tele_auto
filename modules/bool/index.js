@@ -41,7 +41,6 @@ async function strictAuth(body,isAll = true) {
     body: body
   });
 
-  
   if(res.message !== 'success'){
     errors('Query hết hạn !')
     return 

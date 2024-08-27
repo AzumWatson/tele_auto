@@ -1,23 +1,7 @@
 {
-  "bool": [
+  "ducks": [
     {
-      "query_id": "query_id=AAHgghUJAwAAAOCCFQkV3qDz&user=%7B%22id%22%3A6594855648%2C%22first_name%22%3A%22Obito%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22uchihaObitoAntiSenju%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1724423154&hash=c98585a40a122bb02e817aba97a71921633d3260f9a1eb87aea0343993bf351e"
-    },
-    {
-      "hash": "ca5e2802949dee219f94b55d8cef06a19f64e48d2736db0c6584ddff0fb7b2d3",
-      "data": "auth_date=1724426142\nchat_instance=-4712620488168735568\nchat_type=group\nstart_param=9JWHD\nuser={\"id\":6666734133,\"first_name\":\"Mr\",\"last_name\":\"Dx 🍅 🦴\",\"username\":\"mxdc97\",\"language_code\":\"vi\",\"allows_write_to_pm\":true}"
-    },
-    {
-      "hash": "7bb1714a42ccc0b34ae5eda51792d837f3c9870d79f55d1e5d11c9d51dda82d7",
-      "data": "auth_date=1724426226\nchat_instance=-4712620488168735568\nchat_type=group\nstart_param=9JWHD\nuser={\"id\":2056895982,\"first_name\":\"Mr.TX\",\"last_name\":\"🍅 🦴\",\"username\":\"lxdccc\",\"language_code\":\"en\",\"allows_write_to_pm\":true}"
-    },
-    {
-      "hash": "726965576b9ee0ceada06bf309600089fbdb770622b3add80560ead73aea17d5",
-      "data": "auth_date=1724426280\nchat_instance=-4712620488168735568\nchat_type=group\nstart_param=9JWHD\nuser={\"id\":7096603487,\"first_name\":\"DxMCC 🍅🦴\",\"last_name\":\"\",\"username\":\"DxMCCC9x\",\"language_code\":\"vi\",\"allows_write_to_pm\":true}"
-    },
-    {
-      "hash": "9729da1668cb5b8b3774154e37d90b42bab42733881954679eb43ab34a2661ca",
-      "data": "auth_date=1724426338\nchat_instance=-4712620488168735568\nchat_type=group\nstart_param=9JWHD\nuser={\"id\":7343901570,\"first_name\":\"Ha\",\"last_name\":\"LinhNeee🦴\",\"username\":\"thanosv4\",\"language_code\":\"en\",\"allows_write_to_pm\":true}"
+      "query_id": "query_id=AAHgghUJAwAAAOCCFQk_HLIE&user=%7B%22id%22%3A6594855648%2C%22first_name%22%3A%22Obito%20%F0%9F%A6%B4%20%F0%9F%8D%85%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22uchihaObitoAntiSenju%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1723900488&hash=03a6ec14232b5b39e602b9d9f219f85eaca20875df93f553bacdd0549bd45a2e"
     }
   ]
 }

@@ -60,13 +60,13 @@ async function getInfo(isAll = true) {
 async function refreshToken() {
   try {
     const data = await getCurrentProfile();
-    const { refreshToken } = data;
+    const { refreshToken: tokenRefreshData } = data;
     const url = 'https://dev-api.goatsbot.xyz/auth/refresh-tokens';
     const res = await callApi({
       url: url,
       method: 'POST',
       body: {
-        refreshToken: refreshToken,
+        refreshToken: tokenRefreshData,
       },
     });
 
@@ -88,6 +88,7 @@ async function refreshToken() {
     });
 
     logs(`Refresh token thành công !`);
+    await login()
     return res;
   } catch (error) {}
 }
@@ -155,17 +156,38 @@ async function doQuest() {
 }
 
 async function finishQuest(id) {
- try {
-  const url = 'https://dev-api.goatsbot.xyz/missions/action/' + id;
-  const res = await callApi({
-    url: url,
-    method: 'POST',
-  });
-  const { status } = res;
-  return status === 'success';
- } catch (error) {
-  return 
- }
+  try {
+    const url = 'https://dev-api.goatsbot.xyz/missions/action/' + id;
+    const res = await callApi({
+      url: url,
+      method: 'POST',
+    });
+    const { status } = res;
+    return status === 'success';
+  } catch (error) {
+    return;
+  }
+}
+
+async function dailyCheckin() {
+  try {
+    const url =
+      'https://api-checkin.goatsbot.xyz/checkin/action/66cc7580df664984e4617ce0';
+    const res = await callApi({
+      url: url,
+      method: 'POST',
+    });
+
+    const isCheckinSuccess = res?.status === 'success';
+    if (isCheckinSuccess) {
+      logs('Điểm danh thành công !');
+    } else {
+      logs(colors.white('Hôm nay đã điểm danh rồi !'));
+    }
+    return isCheckinSuccess;
+  } catch (error) {
+    return;
+  }
 }
 
 async function login() {
@@ -176,12 +198,13 @@ async function login() {
       url: url,
       method: 'POST',
       isQueryId: true,
-      typeQueryId:'raw'
+      typeQueryId: 'raw',
     });
 
     if (!res) {
       errors('Login lỗi, đang thử đăng nhập lại !');
       await refreshToken();
+      return
     }
 
     const {
@@ -219,8 +242,9 @@ async function processAccount(type, account) {
   const isAuth = await login();
   if (!isAuth) return;
   await getInfo();
+  await dailyCheckin()
   const isReloadBalance = await doQuest();
-  if(!isReloadBalance) return
+  if (!isReloadBalance) return;
   await getInfo(false);
   try {
   } catch (e) {

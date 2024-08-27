@@ -68,15 +68,107 @@ async function login(isAll = true) {
   }
 }
 
-async function questDone() {
-  const url = 'https://api.duckcoop.xyz/user-partner-mission/get';
+async function doQuestAssambador1() {
+  try {
+    const url = 'https://api.duckcoop.xyz/ambassador-mission/list';
 
+    const res = await callApi({
+      url: url,
+      method: 'GET',
+    });
+
+    if(!res) return 
+
+    const { data } = res?.data
+
+    const allMission = data?.map((e) => e?.ambassador_missions).flat(1)
+    console.log('allMission ___',allMission);
+    
+
+  } catch (error) {}
+}
+
+async function questDoneAssambador() {
+  try {
+    const url = 'https://api.duckcoop.xyz/user-ambassador-mission/get';
+
+    const res = await callApi({
+      url: url,
+      method: 'GET',
+    });
+    const { data } = res;
+    return data;
+  } catch (error) {
+    return [];
+  }
+}
+
+async function doQuestAssambador() {
+  const url = 'https://api.duckcoop.xyz/ambassador-mission/list';
   const res = await callApi({
     url: url,
     method: 'GET',
   });
-  const { data } = res;
-  return data;
+  const { data } = res?.data;
+  const listQuestDone = await questDoneAssambador();
+  const listIdQuestDone = listQuestDone.map((e) => e.ambassador_mission_id);
+  const allMission = data?.map((e) => e?.ambassador_missions).flat(1) || []
+  const listQuestUnFinish = allMission.filter(
+    (e) => !listIdQuestDone.includes(e.am_id),
+  );
+
+  if (listQuestUnFinish.length) {
+    logs(`Bắt đầu làm ${colors.cyan(listQuestUnFinish.length)} quest...`.white);
+  } else {
+    logs('Đã làm hết quest Assambador'.white);
+    return;
+  }
+  const { username } = await getCurrentProfile();
+
+  for await (const task of listQuestUnFinish) {
+    const { am_id, title } = task;
+    readline.cursorTo(process.stdout, 0);
+    process.stdout.write(
+      `[ ${colors.magenta(`${username}`)} ]` +
+        colors.yellow(` Quest Assambador: ${colors.white(title)} `) +
+        colors.red('Đang làm... '),
+    );
+    await delay(1);
+    const isFinish = await finishQuest(am_id, true);
+    readline.cursorTo(process.stdout, 0);
+    if (isFinish) {
+      process.stdout.write(
+        `[ ${colors.magenta(`${username}`)} ]` +
+          colors.yellow(` Quest Assambador: ${colors.white(title)} `) +
+          colors.green('Done !                  '),
+      );
+    } else {
+      process.stdout.write(
+        `[ ${colors.magenta(`${username}`)} ]` +
+          colors.yellow(` Quest Assambador: ${colors.white(title)} `) +
+          colors.red('Faild !                  '),
+      );
+    }
+    console.log();
+  }
+  logs('Đã xong hết tất cả các quest !');
+  return true;
+}
+
+
+async function questDone() {
+  try {
+    const url = 'https://api.duckcoop.xyz/user-partner-mission/get';
+
+    const res = await callApi({
+      url: url,
+      method: 'GET',
+    });
+    const { data } = res;
+    return data;
+  } catch (error) {
+    return [];
+  }
 }
 
 async function doQuest() {
@@ -106,7 +198,7 @@ async function doQuest() {
     readline.cursorTo(process.stdout, 0);
     process.stdout.write(
       `[ ${colors.magenta(`${username}`)} ]` +
-        colors.yellow(` Quest : ${colors.white(title)} `) +
+        colors.yellow(` Quest: ${colors.white(title)} `) +
         colors.red('Đang làm... '),
     );
     await delay(1);
@@ -115,13 +207,13 @@ async function doQuest() {
     if (isFinish) {
       process.stdout.write(
         `[ ${colors.magenta(`${username}`)} ]` +
-          colors.yellow(` Quest : ${colors.white(title)} `) +
+          colors.yellow(` Quest: ${colors.white(title)} `) +
           colors.green('Done !                  '),
       );
     } else {
       process.stdout.write(
         `[ ${colors.magenta(`${username}`)} ]` +
-          colors.yellow(` Quest : ${colors.white(title)} `) +
+          colors.yellow(` Quest: ${colors.white(title)} `) +
           colors.red('Faild !                  '),
       );
     }
@@ -131,13 +223,16 @@ async function doQuest() {
   return true;
 }
 
-async function finishQuest(id) {
-  const url = `https://api.duckcoop.xyz/user-partner-mission/claim`;
+async function finishQuest(id, isAssambardor = false) {
+  const urlPartner = `https://api.duckcoop.xyz/user-partner-mission/claim`;
+  const urlAssambardor = `https://api.duckcoop.xyz/user-ambassador-mission/claim`;
+
+
   const res = await callApi({
-    url: url,
+    url: isAssambardor ? urlAssambardor : urlPartner,
     method: 'POST',
     body: {
-      partner_mission_id: id,
+      ...( isAssambardor ? { ambassador_mission_id: id } : { partner_mission_id: id } ),
     },
   });
 
@@ -238,7 +333,9 @@ async function processAccount(type, account) {
   await checkIn();
   await getBalance();
   await checkQuestDuckCommunity();
-  await doQuest();
+  const isHasQuest = await doQuest();
+  const isHasQuestAssambador = await doQuestAssambador();
+  if(!isHasQuest && !isHasQuestAssambador) return
   await getBalance();
   try {
   } catch (e) {

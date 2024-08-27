@@ -13,7 +13,7 @@ const currentAccount = new Map();
 const currentProject = new Map();
 const KEY_CURRENT_PROFILE = 'currentProfile';
 const KEY_CURRENT_PROJECT = 'currentProject';
-const FORMAT_DATE_TIME = 'DD/MM/YYYY HH:mm'
+const FORMAT_DATE_TIME = 'DD/MM/YYYY HH:mm';
 
 const headers = {
   authority: '',
@@ -157,15 +157,17 @@ async function callApi({
 
     if (
       !response ||
-      response?.statusCode === 500 ||
-      (response?.error_code && response?.error_code !== 'OK')
+      (response?.statusCode &&
+        (response?.statusCode === 500 || response?.statusCode === 401))
     ) {
-      errors('', 'Lỗi call api:' + url + `[ ${response?.message} ]`);
+      errors(
+        'Lấy lại query_id hoặc token !:' + url + `[ ${response?.message} ]`,
+      );
       return response;
     }
     return response;
   } catch (error) {
-    errors('', error);
+    // errors(error);
   }
 }
 
@@ -228,7 +230,12 @@ async function loadConfig(nameFile) {
 }
 
 async function delay(second, show) {
-  show && console.log('delay', colors.yellow(second), 'seconds');
+  show &&
+    console.log(
+      `${colors.dim('[ WAITING ]')} Chờ ${colors.cyan(
+        second + 's',
+      )} để tiếp tục vòng lặp !`,
+    );
   return new Promise((ok) => setTimeout(ok, second > 0 ? second * 1000 : 100));
 }
 
@@ -238,6 +245,11 @@ function profileSumary() {
 
     console.log(`[ ${key} ]`.cyan, colors.green(v.length), 'profiles');
   });
+}
+
+function randomBetweenNumber(min = 0, max) {
+  if (!max) return 5;
+  return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 const publicModules = {
@@ -257,7 +269,8 @@ const publicModules = {
   getCurrentProject,
   toVietNamTime,
   FORMAT_DATE_TIME,
-  formatNumber
+  formatNumber,
+  randomBetweenNumber,
 };
 
 module.exports = publicModules;
