@@ -11,7 +11,7 @@ async function getUser(isAll = true) {
     isQueryId: true,
   });
 
-  if(res.message === 'Init data expired'){
+  if(!res || res?.message === 'Init data expired'){
     errors('Query hết hạn !')
     return 
   }
