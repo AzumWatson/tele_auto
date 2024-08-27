@@ -1,1 +1,0 @@
-query CATS lấy ở api user, sau chữ tma
