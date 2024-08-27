@@ -88,6 +88,7 @@ async function getHeader({
   method,
   customHeader,
   tokenType,
+  typeQueryId = 'tma ',
 }) {
   const splitUrl = url.split('/');
   const domain = [...splitUrl].slice(0, 3).join('/');
@@ -104,8 +105,12 @@ async function getHeader({
     return {
       ...headers,
       ...authDomain,
-      Authorization: 'tma ' + query_id,
-      rawdata: query_id,
+      ...(typeQueryId === 'raw'
+        ? { rawdata: query_id }
+        : {
+            Authorization: typeQueryId + query_id,
+          }),
+
       ...customHeader,
     };
   }
@@ -135,6 +140,7 @@ async function callApi({
       method,
       headersCustom,
       tokenType,
+      typeQueryId,
     });
 
     if (!isAuth) {

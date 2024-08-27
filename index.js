@@ -15,6 +15,7 @@ const { processAccount: processBool } = require('./modules/bool');
 const { processAccount: processDogX } = require('./modules/dogx');
 const { processAccount: processDuckChain } = require('./modules/duck-chain');
 const { processAccount: processCatsSmall } = require('./modules/cats-small');
+const { processAccount: processAgent301 } = require('./modules/agent301');
 const CONSTANT = require('./constant');
 let runTheFirst = true;
 
@@ -66,6 +67,9 @@ async function startSession() {
         case 'cats-small':
           await processCatsSmall(project, account);
           break;
+        case 'agent301':
+          await processAgent301(project, account);
+          break;
         default:
           break;
       }
@@ -75,7 +79,6 @@ async function startSession() {
       );
       console.log('');
       await delay(2);
-
     }
   }
   runTheFirst = false;
