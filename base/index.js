@@ -235,6 +235,32 @@ async function loadConfig(nameFile) {
   });
 }
 
+function loadProfileTxt(pathFile) {
+  try {
+    const dataFile = path.join(pathFile, 'data.txt');
+    const v = fs
+      .readFileSync(dataFile, 'utf8')
+      .replace(/\r/g, '')
+      .split('\n')
+      .filter(Boolean);
+
+    const dataExtract = [];
+    if (v.length) {
+      for (let a of v) {
+        const data = extractUserData(a);
+        dataExtract.push(data);
+      }
+      console.log(
+        colors.green(`Load thành công ${colors.yellow(v.length)} profile !`),
+      );
+    } else
+      console.log(colors.red('Không tìm thấy thông tin nào trong data.txt'));
+    return dataExtract;
+  } catch (e) {
+    console.log(colors.red('Không thể load profile: ', e));
+  }
+}
+
 async function delay(second, show) {
   show &&
     console.log(
@@ -277,6 +303,7 @@ const publicModules = {
   FORMAT_DATE_TIME,
   formatNumber,
   randomBetweenNumber,
+  loadProfileTxt
 };
 
 module.exports = publicModules;
