@@ -1,0 +1,1 @@
+user=%7B%22id%22%3A6594855648%2C%22first_name%22%3A%22Obito%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22uchihaObitoAntiSenju%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&chat_instance=7488075306332939918&chat_type=sender&auth_date=1724937781&hash=f1f484747e970bcaa0be4b5dcc73cf29c3789910fb569c1d0641fa3deb5cba6d
