@@ -154,7 +154,6 @@ async function callApi({
         ? delete genHeaders.Authorization
         : delete genHeaders.rawdata;
     }
-
     const res = await fetch(url, {
       method: method,
       headers: genHeaders,

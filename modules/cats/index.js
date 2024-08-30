@@ -1,9 +1,15 @@
-const { errors, logs, callApi, getCurrentProfile, delay } = require('../../base');
+const {
+  errors,
+  logs,
+  callApi,
+  getCurrentProfile,
+  delay,
+} = require('../../base');
 const colors = require('colors');
 const readline = require('readline');
 
 async function getUser(isAll = true) {
-  const url = 'https://cats-backend-production.up.railway.app/user';
+  const url = 'https://cats-backend-wkejfn-production.up.railway.app/user';
 
   const res = await callApi({
     url: url,
@@ -11,11 +17,10 @@ async function getUser(isAll = true) {
     isQueryId: true,
   });
 
-  if(!res || res?.message === 'Init data expired'){
-    errors('Query hết hạn !')
-    return 
+  if (!res || !res?.username) {
+    errors('Query hết hạn !');
+    return;
   }
-  
 
   const {
     username,
@@ -42,12 +47,13 @@ async function getUser(isAll = true) {
     }
   }
   logs(`Balance all: ${colors.cyan(totalRewards)}`);
-  return true
+  return true;
 }
 
 async function doQuest(type) {
   const url =
-    'https://cats-backend-production.up.railway.app/tasks/user?group=' + type;
+    'https://cats-backend-wkejfn-production.up.railway.app/tasks/user?group=' +
+    type;
   const res = await callApi({
     url: url,
     method: 'GET',
@@ -55,13 +61,15 @@ async function doQuest(type) {
   });
   const { tasks } = res;
 
-  
-  const listQuestUnFinish = tasks.filter((e) => !e.completed && e?.id !== 23);
-  const isConnectBitgetWalletTask = listQuestUnFinish.find((e) => e?.id === 23)
+  const idExclude = [23, 5, 4, 49,2,3];
+  const listQuestUnFinish = tasks.filter(
+    (e) => !e.completed && !idExclude.includes(e?.id),
+  );
+  const isConnectBitgetWalletTask = listQuestUnFinish.find((e) => e?.id === 23);
 
-  if(type === 'bitget'){
-    if(isConnectBitgetWalletTask){
-      logs(`Còn quest ${isConnectBitgetWalletTask?.title} chưa làm !`.white)
+  if (type === 'bitget') {
+    if (isConnectBitgetWalletTask) {
+      logs(`Còn quest ${isConnectBitgetWalletTask?.title} chưa làm !`.white);
     }
   }
 
@@ -105,32 +113,29 @@ async function doQuest(type) {
 }
 
 async function finishQuest(id) {
-  const url = `https://cats-backend-production.up.railway.app/tasks/${id}/complete`;
+  const url = `https://cats-backend-wkejfn-production.up.railway.app/tasks/${id}/complete`;
   const res = await callApi({
     url: url,
     method: 'POST',
-    isQueryId:true
+    isQueryId: true,
   });
   const { status } = res;
   return status === 'success';
 }
 
-
 async function taskNomis() {
-  const url = `https://cats-backend-production.up.railway.app/tasks/nomis`;
+  const url = `https://cats-backend-wkejfn-production.up.railway.app/tasks/nomis`;
   const res = await callApi({
     url: url,
     method: 'POST',
-    isQueryId:true,
-    body:{
-      walletAddress:''
-    }
+    isQueryId: true,
+    body: {
+      walletAddress: '',
+    },
   });
   const { rewardPoints } = res;
   return rewardPoints;
 }
-
-
 
 async function processAccount(type, account) {
   if (type !== 'cats') {
@@ -145,7 +150,7 @@ async function processAccount(type, account) {
   const { username } = account;
   logs(colors.yellow('CATS start !', username));
   const isAuth = await getUser();
-  if(!isAuth) return
+  if (!isAuth) return;
   await doQuest('cats');
   await doQuest('bitget');
   // await taskNomis()

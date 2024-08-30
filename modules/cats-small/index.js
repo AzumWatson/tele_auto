@@ -159,9 +159,6 @@ async function claimQuest(quest) {
       },
     });
 
-    console.log('res _____',res);
-    
-
     if (!res) return;
     const { message } = res;
     return message === 'Done task';

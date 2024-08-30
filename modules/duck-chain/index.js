@@ -246,7 +246,7 @@ async function processAccount(type, account) {
   const isAuth = await getInfo();
   if (!isAuth) return;
   await dailyCheckin()
-  // await startExecuteQuack();
+  await startExecuteQuack();
   await doQuest(TASK.DAILY);
   await doQuest(TASK.PARTNER)
   await doQuest(TASK.SOCIAL)
