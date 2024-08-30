@@ -46,7 +46,7 @@ async function login(data) {
   } catch (error) {}
 }
 
-async function getProfile() {
+async function getProfile(onlyBalance = false) {
   try {
     const user = await getCurrentProfile();
     const url = 'https://tgapp-api.digibuy.io/api/tgapp/v1/user/profile';
@@ -73,17 +73,22 @@ async function getProfile() {
       IsBot,
     } = res?.data;
 
-    logs(`Balance: ${colors.yellow((Balance / 1000).toFixed(4))}`);
-    logs(`Đã invite ${colors.white(`${InviteCount}/${InviteLimit}`)}`);
-    logs(`IP tạo account: ${colors.yellow(RegistrationIp)}`);
-    logs(`Minning speed: ${colors.yellow(total_speed)}`);
-    logs(
-      `Check BOT: ${
-        !IsBot
-          ? colors.yellow('Không phải BOT !')
-          : colors.red('Hệ thống xác nhận tài khoản này là BOT !')
-      }`,
-    );
+    if (onlyBalance) {
+      logs(`Balance: ${colors.yellow((Balance / 1000).toFixed(4))}`);
+    } else {
+      logs(`Balance: ${colors.yellow((Balance / 1000).toFixed(4))}`);
+      logs(`Balance: ${colors.yellow((Balance / 1000).toFixed(4))}`);
+      logs(`Đã invite ${colors.white(`${InviteCount}/${InviteLimit}`)}`);
+      logs(`IP tạo account: ${colors.yellow(RegistrationIp)}`);
+      logs(`Minning speed: ${colors.yellow(total_speed)}`);
+      logs(
+        `Check BOT: ${
+          !IsBot
+            ? colors.yellow('Không phải BOT !')
+            : colors.red('Hệ thống xác nhận tài khoản này là BOT !')
+        }`,
+      );
+    }
     return;
   } catch (error) {}
 }
@@ -101,13 +106,18 @@ async function getStatusDaily() {
       errors('Lấy boots daily thất bại ! !');
       return;
     }
-    const listBoots = [...res?.data];
-    for await (const boot of listBoots) {
+    const listStatusBoots = [...res?.data];
+    for await (const boot of listStatusBoots) {
       logs(
         `Boots: ${colors.white(boot?.content)} ${boot?.current_count}/${
           boot?.task_count
         }`,
       );
+    }
+    const listBootsCanUse = [...res?.data].filter(
+      (e) => e?.current_count < e?.task_count,
+    );
+    for await (const boot of listBootsCanUse) {
       if (boot?.current_count < boot?.task_count) {
         let currentCount = boot?.current_count;
         do {
@@ -117,14 +127,15 @@ async function getStatusDaily() {
             )}`,
           );
           await delay(2);
-          await activeBoots(boot?.type);
-          ++currentCount;
+          const isSuccess = await activeBoots(boot?.type);
+          if (!isSuccess || boot?.type === 'daily') {
+            currentCount = boot?.task_count;
+            continue;
+          } else ++currentCount;
         } while (currentCount < boot?.task_count);
       }
     }
   } catch (error) {
-    console.log('error __', error);
-
     errors('Lấy boots daily thất bại !');
   }
 }
@@ -146,16 +157,13 @@ async function activeBoots(typeBoots) {
     const isSuccess = res?.code === 200;
     switch (typeBoots) {
       case 'daily':
-        isSuccess
-          ? logs(`Mua boots thành công !`)
-          : logs(`Đang dùng boots cho lần đào này !`.yellow);
+        isSuccess ? logs(`Mua boots thành công !`) : logs(`${res?.msg}`.yellow);
         break;
       case 'mystery':
-        logs(`Mua boots ${typeBoots}: ${colors.yellow(res?.data)}`);
+        logs(`Mua boots ${typeBoots}: ${colors.yellow(res?.msg)}`);
         break;
-      case 'mystery':
-      case 'mystery':
-        logs(`Mua boots ${typeBoots}: ${colors.yellow(res?.data)}`);
+      case 'game':
+        logs(`Mua boots ${typeBoots}: ${colors.yellow(res?.msg)}`);
         break;
       default:
         return;
@@ -168,22 +176,26 @@ async function activeBoots(typeBoots) {
 
 async function dailyCheckIn() {
   try {
-    const url =
-      'https://tgapp-api.digibuy.io/api/tgapp/v1/daily/task/checkIn/status';
+    const user = await getCurrentProfile()
+    const url = 'https://tgapp-api.digibuy.io/api/tgapp/v1/daily/task/checkIn';
     const res = await callApi({
       url: url,
-      method: 'GET',
+      method: 'POST',
       tokenType: '',
+      body: {
+        uid: user?.userId,
+        type: 'daily_check_in',
+      },
     });
 
     if (!res || res?.code !== 200) {
-      errors('CheckIn thất bại !!');
+      errors(`${res?.msg}`);
       return;
     }
 
-    logs(`CheckIn thành công !`);
+    logs(`${res?.msg}`);
   } catch (error) {
-    errors('CheckIn thất bại !!');
+    errors(error);
   }
 }
 
@@ -211,7 +223,7 @@ async function getStatusFarming() {
       )}, thời gian claim ${colors.cyan(toVietNamTime(next_claim_timestamp))}`,
     );
 
-    const timeClaim = next_claim_timestamp ;
+    const timeClaim = next_claim_timestamp;
     const now = Date.now();
     if (timeClaim <= now) {
       const isClaim = await claim();
@@ -281,25 +293,25 @@ async function claimGame(id) {
 async function playGame() {
   try {
     let maxGame = 3;
-    let currentGame = 0
+    let currentGame = 0;
     do {
       const resGetId = await getIdGame();
       if (!resGetId) return;
       const { game_count, game_id } = resGetId;
-      if(!game_id){
-        errors('Không thể khởi tạo game !')
-        currentGame = 4
-        return
-      }
-      currentGame = game_count;
-      ++currentGame;
-      if (currentGame >= maxGame) {
-        logs(`Hôm nay đã hết lượt chơi !`);
+      if (!game_id || !game_count) {
+        !game_count
+          ? errors('Hết lượt chơi game !')
+          : !game_id
+          ? errors('Không thể khởi tạo game !')
+          : '';
+        currentGame = 0;
         return;
       }
+      currentGame = game_count;
+      --currentGame;
       logs(
         `Bắt đầu chơi game ${colors.yellow(game_id)}, còn ${colors.yellow(
-          maxGame,
+          game_count,
         )} game !`,
       );
       await delay(30);
@@ -308,7 +320,8 @@ async function playGame() {
         ? logs(`Kiếm được ${isClaimed} điểm !`)
         : logs(`Claim điểm game !`);
       await delay(2);
-    } while (currentGame >= maxGame);
+      console.log('currentGame ___', currentGame);
+    } while (!currentGame);
   } catch (error) {
     errors(error || 'Lấy trạng thái farming lỗi !');
   }
@@ -444,6 +457,7 @@ async function processAccount() {
     await getStatusDaily();
     await playGame();
     await doQuest();
+    await getProfile(true);
   } catch (e) {
     errors(extUserName, e);
   }
@@ -451,7 +465,7 @@ async function processAccount() {
 
 async function farming() {
   try {
-    const user = await getCurrentProfile()
+    const user = await getCurrentProfile();
     const url =
       'https://tgapp-api.digibuy.io/api/tgapp/v1/point/reward/farming';
     const res = await callApi({
@@ -462,19 +476,22 @@ async function farming() {
       },
       tokenType: '',
     });
-
-    if (!res || res?.code !== 200 || res?.err === 'Has farming event wait claim') {
+    if (
+      !res ||
+      res?.code !== 200 ||
+      res?.err === 'Has farming event wait claim'
+    ) {
       errors('Start farming thất bại, đang chạy farming !');
       return;
     }
-    logs('Farming thành công !');
+    logs(`Farming thành công, speed:${colors.yellow(res?.data)} !`);
     return res?.code === 200;
   } catch (error) {}
 }
 
 async function claim() {
   try {
-    const user = await getCurrentProfile()
+    const user = await getCurrentProfile();
     const url = 'https://tgapp-api.digibuy.io/api/tgapp/v1/point/reward/claim';
     const res = await callApi({
       url: url,
@@ -485,11 +502,16 @@ async function claim() {
       tokenType: '',
     });
 
-    if (!res || res?.code !== 200 || res?.err === 'Farming event not finished') {
+    if (
+      !res ||
+      res?.code !== 200 ||
+      res?.err === 'Farming event not finished'
+    ) {
       errors('Chưa tới thời gian claim !');
       return;
     }
     logs('Claim thành công !');
+    return res?.code === 200;
   } catch (error) {}
 }
 

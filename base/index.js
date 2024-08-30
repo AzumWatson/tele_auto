@@ -4,6 +4,7 @@ const path = require('path');
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 const timezone = require('dayjs/plugin/timezone');
+const readline = require('readline');
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -262,13 +263,17 @@ function loadProfileTxt(pathFile) {
 }
 
 async function delay(second, show) {
-  show &&
-    console.log(
-      `${colors.dim('[ WAITING ]')} Chờ ${colors.cyan(
-        second + 's',
-      )} để tiếp tục vòng lặp !`,
-    );
-  return new Promise((ok) => setTimeout(ok, second > 0 ? second * 1000 : 100));
+  if (show) {
+    for (let i = second; i >= 0; i--) {
+      readline.cursorTo(process.stdout, 0);
+      process.stdout.write(
+        `${colors.dim('[ WAITING ]')} Chờ ${colors.cyan(
+          i + 's',
+        )} để tiếp tục vòng lặp !`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
 }
 
 function profileSumary() {
@@ -303,7 +308,7 @@ const publicModules = {
   FORMAT_DATE_TIME,
   formatNumber,
   randomBetweenNumber,
-  loadProfileTxt
+  loadProfileTxt,
 };
 
 module.exports = publicModules;
