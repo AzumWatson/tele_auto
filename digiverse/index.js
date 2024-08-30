@@ -16,6 +16,7 @@ const colors = require('colors');
 const readline = require('readline');
 
 const mapAuth = new Map();
+const timeAuth = new Map();
 
 async function login(data) {
   try {
@@ -209,6 +210,20 @@ async function getStatusFarming() {
         (reward / 1000).toFixed(4),
       )}, thời gian claim ${colors.cyan(toVietNamTime(next_claim_timestamp))}`,
     );
+
+    const timeClaim = next_claim_timestamp ;
+    const now = Date.now();
+    if (timeClaim <= now) {
+      const isClaim = await claim();
+      if (isClaim) {
+        const result = await farming();
+        if (result) {
+          getStatusFarming();
+        }
+      }
+    }
+
+    timeAuth.set(user?.user?.username, next_claim_timestamp);
   } catch (error) {
     errors(error || 'Lấy trạng thái farming lỗi !');
   }
@@ -227,6 +242,7 @@ async function getIdGame() {
       errors(res?.message || 'Lấy id game lỗi !');
       return;
     }
+
     const { game_count, game_id } = res?.data;
     return {
       game_count,
@@ -264,14 +280,20 @@ async function claimGame(id) {
 
 async function playGame() {
   try {
-    let maxGame = 1;
+    let maxGame = 3;
+    let currentGame = 0
     do {
       const resGetId = await getIdGame();
       if (!resGetId) return;
       const { game_count, game_id } = resGetId;
-      maxGame = game_count;
-      --maxGame;
-      if (!!maxGame) {
+      if(!game_id){
+        errors('Không thể khởi tạo game !')
+        currentGame = 4
+        return
+      }
+      currentGame = game_count;
+      ++currentGame;
+      if (currentGame >= maxGame) {
         logs(`Hôm nay đã hết lượt chơi !`);
         return;
       }
@@ -286,7 +308,7 @@ async function playGame() {
         ? logs(`Kiếm được ${isClaimed} điểm !`)
         : logs(`Claim điểm game !`);
       await delay(2);
-    } while (!!maxGame);
+    } while (currentGame >= maxGame);
   } catch (error) {
     errors(error || 'Lấy trạng thái farming lỗi !');
   }
@@ -427,6 +449,72 @@ async function processAccount() {
   }
 }
 
+async function farming() {
+  try {
+    const user = await getCurrentProfile()
+    const url =
+      'https://tgapp-api.digibuy.io/api/tgapp/v1/point/reward/farming';
+    const res = await callApi({
+      url: url,
+      method: 'POST',
+      body: {
+        uid: user?.userId,
+      },
+      tokenType: '',
+    });
+
+    if (!res || res?.code !== 200 || res?.err === 'Has farming event wait claim') {
+      errors('Start farming thất bại, đang chạy farming !');
+      return;
+    }
+    logs('Farming thành công !');
+    return res?.code === 200;
+  } catch (error) {}
+}
+
+async function claim() {
+  try {
+    const user = await getCurrentProfile()
+    const url = 'https://tgapp-api.digibuy.io/api/tgapp/v1/point/reward/claim';
+    const res = await callApi({
+      url: url,
+      method: 'POST',
+      body: {
+        uid: user?.userId,
+      },
+      tokenType: '',
+    });
+
+    if (!res || res?.code !== 200 || res?.err === 'Farming event not finished') {
+      errors('Chưa tới thời gian claim !');
+      return;
+    }
+    logs('Claim thành công !');
+  } catch (error) {}
+}
+
+const getTimeClaimMin = () => {
+  const keyValue = Array.from(timeAuth, ([k, v]) => ({ k, v }));
+  if (!keyValue.length) {
+    errors('', 'Chưa tài khoản nào login !');
+    return;
+  }
+  const nearest = Math.min(...Object.values(keyValue.map((i) => i.v)));
+  const data = keyValue.find((i) => i.v === nearest);
+  console.log();
+  console.log(
+    colors.red(
+      `======== Tiếp theo ${colors.green(
+        data.k,
+      )} thời gian claim : ${colors.cyan(toVietNamTime(nearest))}`,
+    ),
+  );
+  console.log();
+  const currentTimestamp = Math.floor(Date.now() / 1000);
+  const secondsUntilTarget = Math.round(nearest / 1000) - currentTimestamp;
+  return secondsUntilTarget <= 0 ? 5 : secondsUntilTarget;
+};
+
 async function eventLoop() {
   const listAccount = Array.from(...mapAuth.values());
   for await (const acc of listAccount) {
@@ -434,8 +522,8 @@ async function eventLoop() {
     await processAccount();
     await delay(1);
   }
-  const timeWait = 6 * 60 * 60; //6h
-  await delay(timeWait, true);
+  const timeClaimMin = getTimeClaimMin();
+  await delay(timeClaimMin, true);
   await eventLoop();
 }
 
