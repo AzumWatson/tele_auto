@@ -189,7 +189,7 @@ async function dailyCheckIn() {
     });
 
     if (!res || res?.code !== 200) {
-      errors(`${res?.msg}`);
+      errors(`Hôm nay đã checkIn rồi !`);
       return;
     }
 
