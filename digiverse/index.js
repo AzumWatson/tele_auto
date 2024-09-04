@@ -77,7 +77,6 @@ async function getProfile(onlyBalance = false) {
       logs(`Balance: ${colors.yellow((Balance / 1000).toFixed(4))}`);
     } else {
       logs(`Balance: ${colors.yellow((Balance / 1000).toFixed(4))}`);
-      logs(`Balance: ${colors.yellow((Balance / 1000).toFixed(4))}`);
       logs(`Đã invite ${colors.white(`${InviteCount}/${InviteLimit}`)}`);
       logs(`IP tạo account: ${colors.yellow(RegistrationIp)}`);
       logs(`Minning speed: ${colors.yellow(total_speed)}`);
@@ -308,7 +307,6 @@ async function playGame() {
         return;
       }
       currentGame = game_count;
-      --currentGame;
       logs(
         `Bắt đầu chơi game ${colors.yellow(game_id)}, còn ${colors.yellow(
           game_count,
@@ -320,7 +318,7 @@ async function playGame() {
         ? logs(`Kiếm được ${isClaimed} điểm !`)
         : logs(`Claim điểm game !`);
       await delay(2);
-      console.log('currentGame ___', currentGame);
+      --currentGame;
     } while (!currentGame);
   } catch (error) {
     errors(error || 'Lấy trạng thái farming lỗi !');

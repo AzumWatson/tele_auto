@@ -119,6 +119,7 @@ async function finishQuest(id) {
     method: 'POST',
     isQueryId: true,
   });
+  if(!res) return
   const { status } = res;
   return status === 'success';
 }
