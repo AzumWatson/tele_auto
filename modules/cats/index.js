@@ -9,7 +9,7 @@ const colors = require('colors');
 const readline = require('readline');
 
 async function getUser(isAll = true) {
-  const url = 'https://cats-backend-wkejfn-production.up.railway.app/user';
+  const url = 'https://cats-backend-cxblew-prod.up.railway.app/user';
 
   const res = await callApi({
     url: url,
@@ -52,7 +52,7 @@ async function getUser(isAll = true) {
 
 async function doQuest(type) {
   const url =
-    'https://cats-backend-wkejfn-production.up.railway.app/tasks/user?group=' +
+    'https://cats-backend-cxblew-prod.up.railway.app/tasks/user?group=' +
     type;
   const res = await callApi({
     url: url,
@@ -113,7 +113,7 @@ async function doQuest(type) {
 }
 
 async function finishQuest(id) {
-  const url = `https://cats-backend-wkejfn-production.up.railway.app/tasks/${id}/complete`;
+  const url = `https://cats-backend-cxblew-prod.up.railway.app/tasks/${id}/complete`;
   const res = await callApi({
     url: url,
     method: 'POST',
@@ -125,7 +125,7 @@ async function finishQuest(id) {
 }
 
 async function taskNomis() {
-  const url = `https://cats-backend-wkejfn-production.up.railway.app/tasks/nomis`;
+  const url = `https://cats-backend-cxblew-prod.up.railway.app/tasks/nomis`;
   const res = await callApi({
     url: url,
     method: 'POST',

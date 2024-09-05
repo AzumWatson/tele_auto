@@ -1,7 +1,36 @@
 {
+  "sunkong": [
+    {
+      "query_id": "user=%7B%22id%22%3A6594855648%2C%22first_name%22%3A%22Obito%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22uchihaObitoAntiSenju%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&chat_instance=6419540457282930756&chat_type=sender&auth_date=1725462629&hash=694f8a78b75cf4fb96f26f01eda52a4ba30aa94bcf1494a58e0bbec5fdeb194a"
+    },
+    {
+      "query_id": "user=%7B%22id%22%3A6666734133%2C%22first_name%22%3A%22Mr%22%2C%22last_name%22%3A%22Dx%20%F0%9F%8D%85%22%2C%22username%22%3A%22mxdc97%22%2C%22language_code%22%3A%22vi%22%2C%22allows_write_to_pm%22%3Atrue%7D&chat_instance=8110126378703015462&chat_type=group&start_param=DE55C60F7&auth_date=1725464051&hash=6e829cc8c79292c447aacb47b3b4afb775ee3f5d7641e33a44d13ddf851bf09c"
+    },
+    {
+      "query_id": "user=%7B%22id%22%3A2056895982%2C%22first_name%22%3A%22Mr.TX%22%2C%22last_name%22%3A%22%F0%9F%8D%85%22%2C%22username%22%3A%22lxdccc%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&chat_instance=8110126378703015462&chat_type=group&start_param=DE55C60F7&auth_date=1725464099&hash=296f089d8aa3db9566142ca2bf810570151c2a6f74225a16936913ab971f435c"
+    },
+    {
+      "query_id": "user=%7B%22id%22%3A7096603487%2C%22first_name%22%3A%22DxMCC%22%2C%22last_name%22%3A%22%F0%9F%8D%85%22%2C%22username%22%3A%22DxMCCC9x%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&chat_instance=8110126378703015462&chat_type=group&start_param=DE55C60F7&auth_date=1725464121&hash=1b7deb3570f1e52d4fda3c833194e3db1af8cd5acea9ffd25accf5e6da88a06d"
+    },
+    {
+      "query_id": "user=%7B%22id%22%3A7343901570%2C%22first_name%22%3A%22Ha%22%2C%22last_name%22%3A%22LinhNeee%20%F0%9F%8D%85%22%2C%22username%22%3A%22thanosv4%22%2C%22language_code%22%3A%22vi%22%2C%22allows_write_to_pm%22%3Atrue%7D&chat_instance=8110126378703015462&chat_type=group&start_param=DE55C60F7&auth_date=1725464167&hash=4449f86c929248f9f843dffa9f14cc697596b1584488dc5b5b9c541fd5316eac"
+    }
+  ],
   "agent301": [
     {
       "query_id": "query_id=AAHgghUJAwAAAOCCFQk-xQ4h&user=%7B%22id%22%3A6594855648%2C%22first_name%22%3A%22Obito%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22uchihaObitoAntiSenju%22%2C%22language_code%22%3A%22vi%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1725453607&hash=f92c0102a22a2b6c3e8908b2643f2b8fcdca2b86fa5962302e236438f01efa40"
+    },
+    {
+      "query_id": "query_id=AAE1Sl4NAwAAADVKXg2BlTnW&user=%7B%22id%22%3A6666734133%2C%22first_name%22%3A%22Mr%22%2C%22last_name%22%3A%22Dx%20%F0%9F%8D%85%22%2C%22username%22%3A%22mxdc97%22%2C%22language_code%22%3A%22vi%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1725541626&hash=69e1b2963f2ecfec9bff0ee1c4a7a813ca23685aa86d2be7ed5d557a0d25b729"
+    },
+    {
+      "query_id": "query_id=AAHuvZl6AAAAAO69mXpg6l9R&user=%7B%22id%22%3A2056895982%2C%22first_name%22%3A%22Mr.TX%22%2C%22last_name%22%3A%22%F0%9F%8D%85%22%2C%22username%22%3A%22lxdccc%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1725541683&hash=9f76ce867868d2e55ae25382981b6639df8350076387be9badf1d1efd153dfd6"
+    },
+    {
+      "query_id": "query_id=AAFfk_0mAwAAAF-T_SZTxMdt&user=%7B%22id%22%3A7096603487%2C%22first_name%22%3A%22DxMCC%22%2C%22last_name%22%3A%22%F0%9F%8D%85%22%2C%22username%22%3A%22DxMCCC9x%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1725541698&hash=421a56359cb66121f723cb00d4a7ea210ab66906ffb9e39afb1bf196f570a0a8"
+    },
+    {
+      "query_id": "query_id=AAGCC7s1AwAAAIILuzWWf-Et&user=%7B%22id%22%3A7343901570%2C%22first_name%22%3A%22Ha%22%2C%22last_name%22%3A%22LinhNeee%20%F0%9F%8D%85%22%2C%22username%22%3A%22thanosv4%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1725541715&hash=a9c5f96c5c37688f72ae5b712594d2a4d2c0b61853684fd2b7ac68378a1cdd3e"
     }
   ],
   "bool": [

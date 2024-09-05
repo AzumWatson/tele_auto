@@ -262,16 +262,16 @@ function loadProfileTxt(pathFile) {
 }
 
 async function delay(second, show) {
-  if (show) {
-    for (let i = second; i >= 0; i--) {
+  for (let i = second; i >= 0; i--) {
+    if (show) {
       readline.cursorTo(process.stdout, 0);
       process.stdout.write(
         `${colors.dim('[ WAITING ]')} Chờ ${colors.cyan(
           i + 's',
         )} để tiếp tục vòng lặp !`,
       );
-      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
 

@@ -51,27 +51,27 @@ async function startSession() {
     for await (const account of listAccount) {
       await setCurrentProfile(account);
       switch (project) {
-        // case 'goats':
-        //   await processGoats(project, account);
-        //   break;
-        // case 'cats':
-        //   await processCat(project, account);
-        //   break;
-        // case 'ducks':
-        //   await processDuck(project, account);
-        //   break;
-        // case 'bool':
-        //   await processBool(project, account);
-        //   break;
-        // case 'duck-chain':
-        //   await processDuckChain(project, account);
-        //   break;
-        // case 'cats-small':
-        //   await processCatsSmall(project, account);
-        //   break;
-        // case 'agent301':
-        //   await processAgent301(project, account);
-        //   break;
+        case 'goats':
+          await processGoats(project, account);
+          break;
+        case 'cats':
+          await processCat(project, account);
+          break;
+        case 'ducks':
+          await processDuck(project, account);
+          break;
+        case 'bool':
+          await processBool(project, account);
+          break;
+        case 'duck-chain':
+          await processDuckChain(project, account);
+          break;
+        case 'cats-small':
+          await processCatsSmall(project, account);
+          break;
+        case 'agent301':
+          await processAgent301(project, account);
+          break;
         case 'sunkong':
           await processSunKong(project, account);
           break;

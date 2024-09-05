@@ -62,7 +62,7 @@ async function startExecuteQuack() {
 
 async function executeQuack(startLoop) {
   const response = await callApi({
-    url: 'https://tgapi.duckchain.io/quack/execute?',
+    url: 'https://preapi.duckchain.io/quack/execute?',
     method: 'GET',
     isQueryId: true,
   });
@@ -90,7 +90,7 @@ async function executeQuack(startLoop) {
 
 const getInfo = async () => {
   const response = await callApi({
-    url: 'https://tgapi.duckchain.io/user/info',
+    url: 'https://preapi.duckchain.io/user/info',
     method: 'GET',
     isQueryId: true,
   });
@@ -121,8 +121,8 @@ const getInfo = async () => {
 };
 
 async function getQuestList(type, isGetListDone) {
-  const urlInfo = 'https://tgapi.duckchain.io/task/task_info?jobId=' + type;
-  const urlList = 'https://tgapi.duckchain.io/task/task_list?jobId=' + type;
+  const urlInfo = 'https://preapi.duckchain.io/task/task_info?jobId=' + type;
+  const urlList = 'https://preapi.duckchain.io/task/task_list?jobId=' + type;
   try {
     const url = isGetListDone ? urlInfo : urlList;
     const res = await callApi({
@@ -194,7 +194,7 @@ async function doQuest(type) {
 async function finishQuest(typeQuest, type, id) {
   let typeActione = typeQuest === 'partner' ? typeQuest : type
   try {
-    const url = `https://tgapi.duckchain.io/task/${typeActione}?taskId=${id}`;
+    const url = `https://preapi.duckchain.io/task/${typeActione}?taskId=${id}`;
     const res = await callApi({
       url: url,
       method: 'GET',
@@ -208,7 +208,7 @@ async function finishQuest(typeQuest, type, id) {
 
 async function dailyCheckin() {
   try {
-    const url = `https://tgapi.duckchain.io/task/sign_in?`;
+    const url = `https://preapi.duckchain.io/task/sign_in?`;
     const res = await callApi({
       url: url,
       method: 'GET',
